@@ -10,14 +10,18 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:replicated.lint"
+    "onCommand:replicated.lint.enable"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "replicated.lint",
-        "title": "Replicated Lint"
+        "command": "replicated.lint.enable",
+        "title": "Replicated Lint Enable"
+      },
+      {
+        "command": "replicated.lint.disable",
+        "title": "Replicated Lint Disable"
       }
     ],
     "configuration": {

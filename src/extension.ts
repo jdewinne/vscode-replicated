@@ -19,28 +19,42 @@ export function activate(context: vscode.ExtensionContext) {
 	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "replicated" is now active!');
 	let diagnosticCollection = languages.createDiagnosticCollection("replicated");
+	let enableOnSave = false;
+
+	let d1 = vscode.commands.registerCommand('replicated.lint.enable', () => {
+		diagnosticCollection.clear();
+		enableOnSave = true;
+		processFolders(diagnosticCollection);
+	});
+
+	let d2 = vscode.commands.registerCommand('replicated.lint.disable', () => {
+		diagnosticCollection.clear();
+		enableOnSave = false;
+	});
 
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
 	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('replicated.lint', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		if (vscode.workspace.workspaceFolders? vscode.workspace.workspaceFolders.length > 0 : false) {
+	let d3 = vscode.workspace.onDidSaveTextDocument((document: vscode.TextDocument) => {
+		if (enableOnSave) {
 			diagnosticCollection.clear();
-			(vscode.workspace.workspaceFolders? vscode.workspace.workspaceFolders : []).forEach(function (fldr) {
-				const absolutePath = fldr.uri.path;
-				const manifestFldr = vscode.workspace.getConfiguration('replicated').get("manifestsFolder");
-				
-				
-				getlintdata(path.join(absolutePath, String(manifestFldr)), diagnosticCollection);
-					
-				
-			});
+			processFolders(diagnosticCollection);
 		}
 	});
 
-	context.subscriptions.push(disposable);
+	context.subscriptions.push(d1,d2,d3);
+}
+
+function processFolders(diagnosticCollection: vscode.DiagnosticCollection) {
+	if (vscode.workspace.workspaceFolders? vscode.workspace.workspaceFolders.length > 0 : false) {
+		(vscode.workspace.workspaceFolders? vscode.workspace.workspaceFolders : []).forEach(function (fldr) {
+			const absolutePath = fldr.uri.path;
+			const manifestFldr = vscode.workspace.getConfiguration('replicated').get("manifestsFolder");
+			
+			getlintdata(path.join(absolutePath, String(manifestFldr)), diagnosticCollection);
+				
+		});
+	}
 }
 
 function getlintdata(fldr: string, diagnosticCollection: vscode.DiagnosticCollection) {
